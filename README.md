@@ -1,72 +1,83 @@
 # Lab Active Directory — estudiolegal.local
 
-Laboratorio doméstico de Active Directory sobre VirtualBox que simula la infraestructura informática de un estudio jurídico. Lo uso para practicar administración de Windows Server, diseño de GPOs y operaciones cotidianas de soporte IT.
+Laboratorio doméstico de Active Directory sobre VirtualBox que simula la infraestructura informática de un estudio jurídico chico. Lo uso para practicar administración de Windows Server, diseño de OUs y GPOs, y operaciones cotidianas de soporte IT.
 
-## Arquitectura
+> **Estado actual (junio 2026):** infraestructura base operativa. Domain Controller promovido, dominio funcional, servicios AD DS y DNS instalados. Próxima fase: construcción de OUs personalizadas y GPOs. Ver roadmap más abajo.
 
-| Rol | Nombre | SO | RAM | Notas |
-|-----|--------|-----|-----|-------|
-| Domain Controller | SRV-LEGAL-01 | Windows Server 2022 | 4 GB | DNS + DHCP + AD DS |
-| Cliente 1 | WS-LEGAL-01 | Windows 10 Pro | 2 GB | Perfil abogado |
-| Cliente 2 | WS-LEGAL-02 | Windows 11 Pro | 2 GB | Perfil secretaria |
+## Arquitectura actual
 
-**Dominio:** `estudiolegal.local`
+| Rol | Nombre de máquina | SO | Estado |
+|-----|-------------------|-----|--------|
+| Domain Controller | SRV-LEGAL-01 | Windows Server 2022 | Operativo, roles AD DS + DNS instalados |
+| Cliente 1 | PC-ABOGADO-01 | Windows 11 | Configurado, pendiente unión al dominio |
 
-## Estructura de Active Directory
+**Dominio:** `estudiolegal.local` 
+**Plataforma de virtualización:** Oracle VirtualBox
 
-Organización lógica replicando un estudio jurídico chico:
+## Lo que está hecho hasta ahora
 
-    estudiolegal.local
-    ├── _Usuarios
-    │   ├── Socios
-    │   ├── Abogados
-    │   ├── Secretaria
-    │   └── Externos
-    ├── _Grupos
-    │   ├── G_Socios
-    │   ├── G_Abogados
-    │   ├── G_Administrativos
-    │   └── G_TI
-    ├── _Equipos
-    │   ├── Estaciones
-    │   └── Servidores
-    └── _Servicios
+- [x] Promoción del servidor a Domain Controller (AD DS)
+- [x] Configuración de DNS interno del dominio
+- [x] Configuración de DHCP para asignación dinámica
+- [x] Servidor local operativo y monitoreado desde Server Manager
+- [x] Cliente Windows 11 instalado y configurado en la red
 
-## GPOs aplicadas
+## Roadmap — próximas etapas
 
-| GPO | Aplicada a | Función |
-|-----|------------|---------|
-| Block-USB-Storage | _Equipos/Estaciones | Bloqueo de almacenamiento USB excepto para G_TI |
-| Password-Policy | Dominio raíz | Mínimo 12 caracteres, complejidad obligatoria, expiración 90 días |
-| Logon-Banner | Dominio raíz | Aviso legal de uso corporativo al iniciar sesión |
-| Map-Drives | _Usuarios | Unidad H: perfil personal, unidad S: compartida del grupo |
-| Restrict-Control-Panel | _Usuarios/Externos | Acceso restringido al panel de control |
+### Fase 2: Estructura organizacional (próxima)
 
-## En curso
+- [ ] Crear OUs personalizadas: `_Usuarios`, `_Grupos`, `_Equipos`, `_Servicios`
+- [ ] Sub-OUs por rol: Socios, Abogados, Secretaria, Externos
+- [ ] Crear grupos de seguridad: G_Socios, G_Abogados, G_Administrativos, G_TI
+- [ ] Crear usuarios de prueba con asignación por rol
+- [ ] Unir cliente PC-ABOGADO-01 al dominio
 
-- [ ] Integrar pfSense / OPNsense como firewall perimetral
-- [ ] Segmentar la red en VLAN de usuarios y VLAN de servidores
-- [ ] Implementar monitoreo con Sysmon y revisión de Event Viewer
-- [ ] Documentar baja y alta masiva de usuarios con PowerShell
+### Fase 3: Políticas de grupo (GPOs)
+
+- [ ] Password-Policy: complejidad de contraseñas y expiración
+- [ ] Block-USB-Storage: bloqueo de almacenamiento USB en estaciones
+- [ ] Map-Drives: mapeo automático de unidades de red por grupo
+- [ ] Logon-Banner: aviso legal corporativo al iniciar sesión
+- [ ] Restrict-Control-Panel: restricciones para usuarios externos
+
+### Fase 4: Documentación y auditoría
+
+- [ ] Scripts PowerShell para alta y baja masiva de usuarios
+- [ ] Implementación de Sysmon para registro detallado
+- [ ] Procedimientos documentados para tareas comunes de soporte
 
 ## Stack técnico
 
 - **Virtualización:** Oracle VirtualBox 7.x
 - **SO servidor:** Windows Server 2022 Standard (evaluación 180 días)
-- **SO clientes:** Windows 10 Pro / Windows 11 Pro
+- **SO cliente:** Windows 11 Pro
 - **Análisis de red:** Wireshark
-- **Scripts:** PowerShell y Bash
+- **Scripts:** PowerShell, Bash
 
-## Aprendizajes destacados
+## Capturas del estado actual
 
-- Cómo se construye una OU bien estructurada y por qué importa para GPOs y delegación.
-- Diagnóstico de problemas comunes: replicación de DNS, política no aplicada, GPO heredada vs bloqueada.
-- Diferencia operativa entre `gpupdate /force` y reinicio para refrescar políticas.
-- Filtrado WMI para aplicar GPOs según el tipo de equipo.
+Ver carpeta `/screenshots`:
 
-## Capturas
+- `01-server-manager.png` — Server Manager con los roles AD DS, DNS y Servicios de archivos instalados
+- `02-usuarios-equipos-ad.png` — Consola Usuarios y equipos de Active Directory con el dominio estudiolegal.local
+- `03-ad-users-container.png` — Contenedor Users por defecto con cuentas y grupos del sistema
+- `04-gpmc-default-policies.png` — Administración de directivas de grupo mostrando las GPOs por defecto del dominio
 
-Ver carpeta `/screenshots` *(se agregan a medida que avanza el lab).*
+## Conceptos clave que estoy trabajando
+
+- **Diferencia entre contenedores por defecto y OUs personalizadas:** los contenedores (Users, Computers, Builtin) vienen con el dominio y no permiten enlazar GPOs. Las OUs personalizadas sí, por eso son la base de cualquier diseño serio.
+- **Estructura plana vs jerárquica:** una OU plana es más simple pero limita la granularidad de las políticas. Una jerárquica permite herencia de GPOs y delegación de administración por sub-equipo.
+- **Default Domain Policy vs GPOs personalizadas:** la política por defecto aplica a todo el dominio. Para reglas específicas por grupo o equipo se crean GPOs nuevas y se enlazan a OUs.
+
+## Parte de un homelab más amplio
+
+Este repo documenta solo el lab de Active Directory. Forma parte de un homelab de ciberseguridad que también incluye, en distintas etapas de configuración:
+
+- **SOC con Wazuh** (SIEM/XDR open source) — repo en preparación
+- **pfSense** como firewall perimetral y segmentación de red — repo en preparación
+- **Tsurugi Linux** para forensia digital — repo en preparación
+
+Cada componente tendrá su propio repo a medida que avance la documentación.
 
 ---
 
