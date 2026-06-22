@@ -26,8 +26,8 @@ Laboratorio doméstico de Active Directory sobre VirtualBox que simula la infrae
 
 ### Fase 2: Estructura organizacional (próxima)
 
-- [ ] Crear OUs personalizadas: `_Usuarios`, `_Grupos`, `_Equipos`, `_Servicios`
-- [ ] Sub-OUs por rol: Socios, Abogados, Secretaria, Externos
+- [x] Crear OUs personalizadas: `_Usuarios`, `_Grupos`, `_Equipos`, `_Servicios`
+- [x] Sub-OUs por rol: Socios, Abogados, Secretaria, Externos
 - [ ] Crear grupos de seguridad: G_Socios, G_Abogados, G_Administrativos, G_TI
 - [ ] Crear usuarios de prueba con asignación por rol
 - [ ] Unir cliente PC-ABOGADO-01 al dominio
